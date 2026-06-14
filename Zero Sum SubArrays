@@ -1,0 +1,20 @@
+class Solution 
+{
+    public int count_zero_sum_subarrays(int[] arr) 
+    {
+      int c=0;
+      int sum=0;
+      HashMap<Integer,Integer> prefix= new HashMap<>();
+      prefix.put(0,1);
+      for(int num : arr)
+      {
+        sum += num;
+        if(prefix.containsKey(sum)){
+          c += prefix.get(sum);
+        }
+        int fre=prefix.containsKey(sum) ? prefix.get(sum) : 0;
+        prefix.put(sum,fre + 1);
+      }
+       return c;
+    }
+}
