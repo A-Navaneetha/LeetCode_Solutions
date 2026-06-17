@@ -1,0 +1,25 @@
+class Solution {
+    public String mostCommonWord(String paragraph, String[] banned) {
+        Set<String> set = new HashSet<>();
+        for (String word : banned) {
+            set.add(word);
+        }
+        paragraph = paragraph.toLowerCase();
+        paragraph = paragraph.replaceAll("[!?',;.]", " ");
+        String[] words = paragraph.split("\\s+");
+        Map<String, Integer> fre = new HashMap<>();
+        String ans = "";
+        int maxFre = 0;
+        for (String word : words) {
+            if (!set.contains(word)) {
+                int c = fre.getOrDefault(word, 0) + 1;
+                fre.put(word, c);
+                if (c > maxFre) {
+                    maxFre = c;
+                    ans = word;
+                }
+            }
+        }
+        return ans;
+    }
+}
