@@ -1,0 +1,15 @@
+class Solution {
+    public ListNode removeElements(ListNode head, int val) {
+        ListNode New = new ListNode(0);
+        New.next = head;
+        ListNode curr = New;
+        while (curr.next != null) {
+            if (curr.next.val == val) {
+                curr.next = curr.next.next;
+            } else {
+                curr = curr.next;
+            }
+        }
+        return New.next;
+    }
+}
