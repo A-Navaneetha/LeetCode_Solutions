@@ -1,0 +1,18 @@
+class Solution {
+    public boolean hasMatch(String s, String p) {
+        int pos = p.indexOf('*');
+        String l = p.substring(0, pos);
+        String r = p.substring(pos + 1);
+        for (int i = 0; i <= s.length(); i++) {
+            if (s.startsWith(l, i)) {
+                int j = i + l.length();
+                for (int k = j; k <= s.length(); k++) {
+                    if (s.startsWith(r, k)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+}
