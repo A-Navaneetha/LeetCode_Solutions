@@ -1,0 +1,6 @@
+class Solution {
+    public String winningPlayer(int x, int y) {
+        int val = Math.min(x, y / 4);
+        return (val % 2 == 1) ? "Alice" : "Bob";
+    }
+}
