@@ -1,0 +1,63 @@
+class Solution {
+
+    private int word(String a, String b) {
+        int c = 0;
+
+        for (int i = 0; i < 6; i++) {
+            if (a.charAt(i) == b.charAt(i)) {
+                c++;
+            }
+        }
+
+        return c;
+    }
+
+    public void findSecretWord(String[] words, Master master) {
+
+        List<String> l = new ArrayList<>(Arrays.asList(words));
+
+        while (!l.isEmpty()) {
+
+            int best = Integer.MAX_VALUE;
+            String g = l.get(0);
+
+            for (String a : l) {
+
+                int[] cnt = new int[7];
+
+                for (String b : l) {
+                    if (!a.equals(b)) {
+                        cnt[word(a, b)]++;
+                    }
+                }
+
+                int mx = 0;
+
+                for (int x : cnt) {
+                    mx = Math.max(mx, x);
+                }
+
+                if (mx < best) {
+                    best = mx;
+                    g = a;
+                }
+            }
+
+            int res = master.guess(g);
+
+            if (res == 6) {
+                return;
+            }
+
+            List<String> t = new ArrayList<>();
+
+            for (String s : l) {
+                if (word(g, s) == res) {
+                    t.add(s);
+                }
+            }
+
+            l = t;
+        }
+    }
+}
