@@ -1,0 +1,41 @@
+class Solution {
+    public int zigZagArrays(int n, int l, int r) {
+        int mod = 1_000_000_007;
+        int m = r - l + 1;
+        long[] u = new long[m + 1];
+        long[] d = new long[m + 1];
+        for (int v = 1; v <= m; v++) {
+            u[v] = v - 1;
+            d[v] = m - v;
+        }
+        for (int len = 3; len <= n; len++) {
+            long[] nu = new long[m + 1];
+            long[] nd = new long[m + 1];
+            long[] preDown = new long[m + 1];
+            long[] preUp = new long[m + 1];
+            for (int v = 1; v <= m; v++) {
+                preDown[v] = (preDown[v - 1] + d[v]) % mod;
+                preUp[v] = (preUp[v - 1] + u[v]) % mod;
+            }
+            long tU = preUp[m];
+            for (int v = 1; v <= m; v++) {
+                nu[v] = preDown[v - 1];
+                nd[v] = (tU- preUp[v] + mod) % mod;
+            }
+            u = nu;
+            d = nd;
+        }
+        long ans = 0;
+
+        if (n == 2) {
+            for (int v = 1; v <= m; v++) {
+                ans = (ans + u[v] + d[v]) % mod;
+            }
+        } else {
+            for (int v = 1; v <= m; v++) {
+                ans = (ans + u[v] + d[v]) % mod;
+            }
+        }
+        return (int) ans;
+    }
+}
