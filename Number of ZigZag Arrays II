@@ -1,0 +1,78 @@
+class Solution {
+    static final long MOD = 1_000_000_007L;
+
+    public int zigZagArrays(int n, int l, int r) {
+        int range = r - l + 1;
+        int size = 2 * range;
+
+        long[] dp = new long[size];
+        for (int i = 0; i < range; i++) {
+            dp[i] = i;                     
+            dp[range + i] = range - 1 - i;
+        }
+
+        long[][] trans = new long[size][size];
+
+        for (int curr = 0; curr < range; curr++) {
+            for (int prev = 0; prev < curr; prev++) {
+                trans[curr][range + prev] = 1;
+            }
+        }
+
+        for (int curr = 0; curr < range; curr++) {
+            for (int prev = curr + 1; prev < range; prev++) {
+                trans[range + curr][prev] = 1;
+            }
+        }
+
+        long[] finalDp = powerMultiply(trans, dp, n - 2);
+
+        long answer = 0;
+        for (long value : finalDp) {
+            answer = (answer + value) % MOD;
+        }
+
+        return (int) answer;
+    }
+    private long[] powerMultiply(long[][] matrix, long[] vector, long power) {
+        long[][] currentMatrix = matrix;
+        long[] result = vector.clone();
+        while (power > 0) {
+            if ((power & 1) == 1) {
+                result = multiplyMatrixVector(currentMatrix, result);
+            }
+            currentMatrix = multiplyMatrices(currentMatrix, currentMatrix);
+            power >>= 1;
+        }
+        return result;
+    }
+    private long[] multiplyMatrixVector(long[][] matrix, long[] vector) {
+        int size = matrix.length;
+        long[] result = new long[size];
+        for (int row = 0; row < size; row++) {
+            long sum = 0;
+            for (int col = 0; col < size; col++) {
+                if (matrix[row][col] != 0) {
+                    sum = (sum + matrix[row][col] * vector[col]) % MOD;
+                }
+            }
+            result[row] = sum;
+        }
+        return result;
+    }
+    private long[][] multiplyMatrices(long[][] a, long[][] b) {
+        int size = a.length;
+        long[][] res= new long[size][size];
+        for (int row = 0; row < size; row++) {
+            for (int mid = 0; mid < size; mid++) {
+                if (a[row][mid] == 0) continue;
+                long val= a[row][mid];
+                for (int col = 0; col < size; col++) {
+                    if (b[mid][col] == 0) continue;
+                    res[row][col] =(res[row][col] + val * b[mid][col]) % MOD;
+                }
+            }
+        }
+        return res;
+    }
+}
