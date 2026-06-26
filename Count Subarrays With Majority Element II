@@ -1,0 +1,58 @@
+class Solution {
+    class Fenwick {
+        int[] bit;
+
+        Fenwick(int n) {
+            bit = new int[n + 2];
+        }
+
+        void update(int index, int value) {
+            while (index < bit.length) {
+                bit[index] += value;
+                index += index & -index;
+            }
+        }
+
+        int query(int index) {
+            int sum = 0;
+            while (index > 0) {
+                sum += bit[index];
+                index -= index & -index;
+            }
+            return sum;
+        }
+    }
+
+    public long countMajoritySubarrays(int[] nums, int target) {
+        int n = nums.length;
+
+        int[] prefix = new int[n + 1];
+
+        for (int i = 0; i < n; i++) {
+            prefix[i + 1] = prefix[i] + (nums[i] == target ? 1 : -1);
+        }
+
+        int[] values = prefix.clone();
+        Arrays.sort(values);
+
+        Map<Integer, Integer> map = new HashMap<>();
+        int idx = 1;
+
+        for (int value : values) {
+            if (!map.containsKey(value)) {
+                map.put(value, idx++);
+            }
+        }
+
+        Fenwick tree = new Fenwick(idx);
+
+        long ans = 0;
+
+        for (int value : prefix) {
+            ans += tree.query(map.get(value) - 1);
+            tree.update(map.get(value), 1);
+        }
+
+        return ans;
+    }
+}
