@@ -1,0 +1,21 @@
+import java.util.Arrays;
+
+class Solution {
+    public int minimumCost(int[] cost) {
+
+        Arrays.sort(cost);
+
+        int sum = 0;
+
+        for (int j = cost.length - 1; j >= 0; j -= 3) {
+
+            sum += cost[j];
+
+            if (j - 1 >= 0) {
+                sum += cost[j - 1];
+            }
+        }
+
+        return sum;
+    }
+}
