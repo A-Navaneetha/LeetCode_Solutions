@@ -1,0 +1,25 @@
+class Solution {
+    public int countLargestGroup(int n) {
+        int[] fre = new int[37];
+        for (int i = 1; i <= n; i++) {
+            int num = i;
+            int sum = 0;
+            while (num > 0) {
+                sum += num % 10;
+                num /= 10;
+            }
+            fre[sum]++;
+        }
+        int max = 0;
+        for (int f : fre) {
+            max = Math.max(max, f);
+        }
+        int c = 0;
+        for (int f : fre) {
+            if (f == max) {
+                c++;
+            }
+        }
+        return c;
+    }
+}
