@@ -1,0 +1,32 @@
+from collections import defaultdict, deque
+from typing import List
+
+class Solution:
+    def countCompleteComponents(self, n: int, edges: List[List[int]]) -> int:
+        adj = defaultdict(list)
+        for a, b in edges:
+            adj[a].append(b)
+            adj[b].append(a)
+        
+        seen = [False] * n
+        count = 0
+        for start in range(n):
+            if not seen[start]:
+                q = deque([start])
+                seen[start] = True
+                nodes = []
+                edge_sum = 0
+                
+                while q:
+                    cur = q.popleft()
+                    nodes.append(cur)
+                    for nxt in adj[cur]:
+                        edge_sum += 1
+                        if not seen[nxt]:
+                            seen[nxt] = True
+                            q.append(nxt)
+                v = len(nodes)
+                e = edge_sum // 2   
+                if e == v * (v - 1) // 2:
+                    count += 1
+        return count
