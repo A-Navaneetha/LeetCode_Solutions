@@ -1,0 +1,174 @@
+from typing import List
+import bisect
+import math
+
+class Solution:
+    def maxActiveSectionsAfterTrade(self, s: str, queries: List[List[int]]) -> List[int]:
+        n = len(s)
+        total_ones = s.count('1')
+        
+        # Build blocks
+        zero_blocks = []  # (start, end, length)
+        one_blocks = []   # (start, end, length)
+        
+        i = 0
+        while i < n:
+            if s[i] == '0':
+                j = i
+                while j < n and s[j] == '0':
+                    j += 1
+                zero_blocks.append((i, j-1, j-i))
+                i = j
+            else:
+                j = i
+                while j < n and s[j] == '1':
+                    j += 1
+                one_blocks.append((i, j-1, j-i))
+                i = j
+        
+        m = len(one_blocks)
+        if m == 0:
+            return [total_ones] * len(queries)
+        
+        starts_with_zero = (s[0] == '0')
+        
+        # Precompute for each one block: start, end, and the gain
+        one_starts = []
+        one_ends = []
+        gains = []
+        
+        for idx in range(m):
+            os, oe, olen = one_blocks[idx]
+            one_starts.append(os)
+            one_ends.append(oe)
+            
+            # Find adjacent zero blocks
+            if starts_with_zero:
+                left_zero_idx = idx
+                right_zero_idx = idx + 1
+            else:
+                left_zero_idx = idx - 1
+                right_zero_idx = idx
+            
+            left_zero_len = 0
+            if 0 <= left_zero_idx < len(zero_blocks):
+                zs, ze, zlen = zero_blocks[left_zero_idx]
+                left_zero_len = zlen
+            
+            right_zero_len = 0
+            if 0 <= right_zero_idx < len(zero_blocks):
+                zs, ze, zlen = zero_blocks[right_zero_idx]
+                right_zero_len = zlen
+            
+            if left_zero_len > 0 and right_zero_len > 0:
+                gains.append(left_zero_len + right_zero_len)
+            else:
+                gains.append(0)
+        
+        # Build sparse table for O(1) range maximum queries
+        log = [0] * (m + 1)
+        for i in range(2, m + 1):
+            log[i] = log[i >> 1] + 1
+        
+        K = log[m] + 1
+        st = [[0] * m for _ in range(K)]
+        st[0] = gains[:]
+        
+        for k in range(1, K):
+            for i in range(m - (1 << k) + 1):
+                st[k][i] = max(st[k-1][i], st[k-1][i + (1 << (k-1))])
+        
+        def range_max(l, r):
+            if l > r:
+                return 0
+            k = log[r - l + 1]
+            return max(st[k][l], st[k][r - (1 << k) + 1])
+        
+        # For each one block, store its adjacent zero block info for clipping
+        one_info = []
+        for idx in range(m):
+            os, oe, olen = one_blocks[idx]
+            
+            if starts_with_zero:
+                left_zero_idx = idx
+                right_zero_idx = idx + 1
+            else:
+                left_zero_idx = idx - 1
+                right_zero_idx = idx
+            
+            lzs, lze, lzl = (-1, -1, 0)
+            if 0 <= left_zero_idx < len(zero_blocks):
+                lzs, lze, lzl = zero_blocks[left_zero_idx]
+            
+            rzs, rze, rzl = (-1, -1, 0)
+            if 0 <= right_zero_idx < len(zero_blocks):
+                rzs, rze, rzl = zero_blocks[right_zero_idx]
+            
+            one_info.append((os, oe, lzs, lze, lzl, rzs, rze, rzl))
+        
+        ans = []
+        for l, r in queries:
+            best_gain = 0
+            
+            # Find one blocks fully inside [l, r]
+            left_idx = bisect.bisect_left(one_starts, l)
+            right_idx = bisect.bisect_right(one_ends, r) - 1
+            
+            if left_idx <= right_idx:
+                # Middle blocks (not at the edges)
+                mid_left = left_idx + 1
+                mid_right = right_idx - 1
+                if mid_left <= mid_right:
+                    best_gain = max(best_gain, range_max(mid_left, mid_right))
+                
+                # Check edge blocks with clipping
+                # Leftmost block
+                idx = left_idx
+                os, oe, lzs, lze, lzl, rzs, rze, rzl = one_info[idx]
+                if lzl > 0 and rzl > 0:
+                    left_len = min(lze, r) - max(lzs, l) + 1
+                    if left_len < 0:
+                        left_len = 0
+                    if idx == right_idx:
+                        right_len = min(rze, r) - max(rzs, l) + 1
+                        if right_len < 0:
+                            right_len = 0
+                    else:
+                        right_len = rzl
+                    if left_len > 0 and right_len > 0:
+                        best_gain = max(best_gain, left_len + right_len)
+                
+                # Rightmost block (if different)
+                if left_idx != right_idx:
+                    idx = right_idx
+                    os, oe, lzs, lze, lzl, rzs, rze, rzl = one_info[idx]
+                    if lzl > 0 and rzl > 0:
+                        if idx == left_idx:
+                            left_len = min(lze, r) - max(lzs, l) + 1
+                            if left_len < 0:
+                                left_len = 0
+                        else:
+                            left_len = lzl
+                        right_len = min(rze, r) - max(rzs, l) + 1
+                        if right_len < 0:
+                            right_len = 0
+                        if left_len > 0 and right_len > 0:
+                            best_gain = max(best_gain, left_len + right_len)
+                
+                # If there's only one block, handle it specially
+                if left_idx == right_idx:
+                    idx = left_idx
+                    os, oe, lzs, lze, lzl, rzs, rze, rzl = one_info[idx]
+                    if lzl > 0 and rzl > 0:
+                        left_len = min(lze, r) - max(lzs, l) + 1
+                        right_len = min(rze, r) - max(rzs, l) + 1
+                        if left_len < 0:
+                            left_len = 0
+                        if right_len < 0:
+                            right_len = 0
+                        if left_len > 0 and right_len > 0:
+                            best_gain = max(best_gain, left_len + right_len)
+            
+            ans.append(total_ones + best_gain)
+        
+        return ans
