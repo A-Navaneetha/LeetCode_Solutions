@@ -1,0 +1,28 @@
+import bisect
+
+class Solution:
+    def maximumWeight(self, intervals: list[list[int]]) -> list[int]:
+        n = len(intervals)
+        arr = sorted([(l, r, w, i) for i, (l, r, w) in enumerate(intervals)])
+        start = [item[0] for item in arr]
+        memo = {}
+        def solve(i: int, c: int):
+            if c == 4 or i == n:
+                return (0, [])
+            state = (i, c)
+            if state in memo:
+                return memo[state]
+            res_weight, res_indices = solve(i + 1, c)
+            l, r, w, idx = arr[i]
+            next_i = bisect.bisect_right(start, r)
+            take_weight, take_indices = solve(next_i, c + 1)
+            take_weight += w
+            new_indices = sorted(take_indices + [idx])
+            if take_weight > res_weight:
+                res_weight, res_indices = take_weight, new_indices
+            elif take_weight == res_weight and take_weight > 0:
+                if new_indices < res_indices:
+                    res_indices = new_indices
+            memo[state] = (res_weight, res_indices)
+            return memo[state]
+        return solve(0, 0)[1]
