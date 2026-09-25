@@ -1,0 +1,83 @@
+import java.util.*;
+class Solution {
+    public List<String> braceExpansionII(String expression) {
+        Stack<Set<String>> operandStack = new Stack<>();
+        Stack<Character> operatorStack = new Stack<>();
+        int i = 0;
+        int n = expression.length();
+        while (i < n) {
+            char c = expression.charAt(i);
+            if (Character.isLowerCase(c)) {
+                StringBuilder sb = new StringBuilder();
+                while (i < n && Character.isLowerCase(expression.charAt(i))) {
+                    sb.append(expression.charAt(i));
+                    i++;
+                }
+                Set<String> set = new HashSet<>();
+                set.add(sb.toString());
+                operandStack.push(set);
+
+                if (i < n && (expression.charAt(i) == '{' || Character.isLowerCase(expression.charAt(i)))) {
+                    pushOperator('.', operandStack, operatorStack);
+                }
+                continue;
+            } else if (c == '{') {
+                operatorStack.push('{');
+            } else if (c == '}') {
+                while (!operatorStack.isEmpty() && operatorStack.peek() != '{') {
+                    evaluate(operandStack, operatorStack);
+                }
+                operatorStack.pop();
+
+                if (i + 1 < n && (expression.charAt(i + 1) == '{' || Character.isLowerCase(expression.charAt(i + 1)))) {
+                    pushOperator('.', operandStack, operatorStack);
+                }
+            } else if (c == ',') {
+                pushOperator(',', operandStack, operatorStack);
+            }
+
+            i++;
+        }
+
+        while (!operatorStack.isEmpty()) {
+            evaluate(operandStack, operatorStack);
+        }
+
+        List<String> result = new ArrayList<>(operandStack.pop());
+        Collections.sort(result);
+        return result;
+    }
+
+    private void pushOperator(char op, Stack<Set<String>> operandStack, Stack<Character> operatorStack) {
+        while (!operatorStack.isEmpty() && precedence(operatorStack.peek()) >= precedence(op)) {
+            evaluate(operandStack, operatorStack);
+        }
+        operatorStack.push(op);
+    }
+
+    private int precedence(char op) {
+        if (op == '.') return 2;
+        if (op == ',') return 1;
+        return 0;
+    }
+
+    private void evaluate(Stack<Set<String>> operandStack, Stack<Character> operatorStack) {
+        char op = operatorStack.pop();
+        Set<String> set2 = operandStack.pop();
+        Set<String> set1 = operandStack.pop();
+        Set<String> res = new HashSet<>();
+
+        if (op == '.') {
+            for (String s1 : set1) {
+                for (String s2 : set2) {
+                    res.add(s1 + s2);
+                }
+            }
+        } else if (op == ',') {
+            res.addAll(set1);
+            res.addAll(set2);
+        }
+
+        operandStack.push(res);
+    }
+}
