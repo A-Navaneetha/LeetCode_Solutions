@@ -1,0 +1,25 @@
+class Solution {
+    public boolean checkValidString(String s) {
+        int min_Open = 0;
+        int max_Open = 0;
+        for (char ch : s.toCharArray()) {
+            if (ch == '(') {
+                min_Open++;
+                max_Open++;
+            } else if (ch == ')') {
+                min_Open--;
+                max_Open--;
+            } else {
+                min_Open--;
+                max_Open++;
+            }
+            if (max_Open < 0) {
+                return false;
+            }
+            if (min_Open < 0) {
+                min_Open = 0;
+            }
+        }
+        return min_Open == 0;
+    }
+}
