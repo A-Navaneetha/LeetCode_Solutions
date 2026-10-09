@@ -1,0 +1,22 @@
+class Solution:
+    def minInsertions(self, s: str) -> int:
+        inser = 0
+        open_paren = 0
+        i = 0
+        n = len(s)
+        while i < n:
+            if s[i] == '(':
+                open_paren += 1
+                i += 1
+            else:
+                if i + 1 < n and s[i + 1] == ')':
+                    i += 2
+                else:
+                    inser += 1
+                    i += 1
+                if open_paren > 0:
+                    open_paren -= 1
+                else:
+                    inser += 1
+        inser += open_paren * 2
+        return inser
