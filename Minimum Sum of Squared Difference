@@ -1,0 +1,27 @@
+class Solution:
+    def minSumSquareDiff(
+        self, nums1: List[int], nums2: List[int], k1: int, k2: int
+    ) -> int:
+        n = len(nums1)
+        max_diff = 0
+        diff_count = [0] * 100001
+        for i in range(n):
+            d = abs(nums1[i] - nums2[i])
+            diff_count[d] += 1
+            if d > max_diff:
+                max_diff = d
+        k = k1 + k2
+        for d in range(max_diff, 0, -1):
+            if diff_count[d] == 0:
+                continue
+            operations_needed = min(k, diff_count[d])
+            diff_count[d] -= operations_needed
+            diff_count[d - 1] += operations_needed
+            k -= operations_needed
+            if k == 0:
+                break
+        ans = 0
+        for d in range(len(diff_count)):
+            if diff_count[d] > 0:
+                ans += diff_count[d] * (d * d)
+        return ans
