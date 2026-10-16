@@ -1,0 +1,19 @@
+class Solution {
+    public String maxSumOfSquares(int num, int sum) {
+        if (sum < 1 || sum > 9 * num) {
+            return "";
+        }
+        StringBuilder res = new StringBuilder();
+        int remainSum = sum;
+        for (int i = 0; i < num; i++) {
+            int remainSlots = num - 1 - i;
+            int maxDigit = 9;
+            while (remainSum - maxDigit > remainSlots * 9 || maxDigit > remainSum) {
+                maxDigit--;
+            }
+            res.append(maxDigit);
+            remainSum -= maxDigit;
+        }
+        return res.toString();
+    }
+}
