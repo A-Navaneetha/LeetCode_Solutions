@@ -1,0 +1,25 @@
+import java.util.Arrays;
+class Solution {
+    public long maxAlternatingSum(int[] nums) {
+        int n = nums.length;
+        long[] absNums = new long[n];
+        for (int i = 0; i < n; i++) {
+            absNums[i] = Math.abs((long) nums[i]);
+        }
+        Arrays.sort(absNums);
+        long score = 0;
+        int l = 0, r = n - 1;
+        boolean add = true;
+        while (l <= r) {
+            if (add) {
+                score += absNums[r] * absNums[r];
+                r--;
+            } else {
+                score -= absNums[l] * absNums[l];
+                l++;
+            }
+            add = !add;
+        }
+        return score;
+    }
+}
