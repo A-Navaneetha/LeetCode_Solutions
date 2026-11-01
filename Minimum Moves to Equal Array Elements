@@ -1,0 +1,13 @@
+class Solution {
+    public int minMoves(int[] nums) {
+        int min = nums[0];
+        long s = 0; 
+        for (int num : nums) {
+            s += num;
+            if (num < min) {
+                min = num;
+            }
+        }
+        return (int) (s - (long) min * nums.length);
+    }
+}
