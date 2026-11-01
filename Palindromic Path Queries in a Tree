@@ -1,0 +1,126 @@
+import java.util.*;
+
+class Solution {
+    private int timer;
+    private int LOG;
+    private int[] tin, tout, depth;
+    private int[][] up;
+    private int[] bit;
+    private int[] currentChar;
+    private int n;
+
+    private void dfs(int u, int p, int d, List<List<Integer>> adj, int currentMask) {
+        tin[u] = ++timer;
+        depth[u] = d;
+        up[u][0] = p;
+        for (int i = 1; i < LOG; i++) {
+            up[u][i] = up[up[u][i - 1]][i - 1];
+        }
+
+        currentMask ^= (1 << currentChar[u]);
+        
+        updatePoint(tin[u], currentMask);
+        updatePoint(tin[u] + 1, currentMask);
+
+        for (int v : adj.get(u)) {
+            if (v != p) {
+                dfs(v, u, d + 1, adj, currentMask);
+            }
+        }
+        tout[u] = timer;
+    }
+
+    private void updatePoint(int idx, int val) {
+        for (; idx <= n; idx += idx & -idx) {
+            bit[idx] ^= val;
+        }
+    }
+
+    private int queryBit(int idx) {
+        int sum = 0;
+        for (; idx > 0; idx -= idx & -idx) {
+            sum ^= bit[idx];
+        }
+        return sum;
+    }
+
+    private void updateSubtree(int u, int val) {
+        updatePoint(tin[u], val);
+        updatePoint(tout[u] + 1, val);
+    }
+
+    private int getLCA(int u, int v) {
+        if (depth[u] < depth[v]) {
+            int temp = u; u = v; v = temp;
+        }
+        for (int i = LOG - 1; i >= 0; i--) {
+            if (depth[u] - (1 << i) >= depth[v]) {
+                u = up[u][i];
+            }
+        }
+        if (u == v) return u;
+        for (int i = LOG - 1; i >= 0; i--) {
+            if (up[u][i] != up[v][i]) {
+                u = up[u][i];
+                v = up[v][i];
+            }
+        }
+        return up[u][0];
+    }
+
+    public List<Boolean> palindromePath(int n, int[][] edges, String s, String[] queries) {
+        this.n = n;
+        this.timer = 0;
+        this.LOG = 32 - Integer.numberOfLeadingZeros(n);
+
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
+        for (int[] edge : edges) {
+            adj.get(edge[0]).add(edge[1]);
+            adj.get(edge[1]).add(edge[0]);
+        }
+
+        tin = new int[n];
+        tout = new int[n];
+        depth = new int[n];
+        up = new int[n][LOG];
+        bit = new int[n + 2];
+        currentChar = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            currentChar[i] = s.charAt(i) - 'a';
+        }
+
+        dfs(0, 0, 0, adj, 0);
+
+        List<Boolean> result = new ArrayList<>();
+
+        for (String q : queries) {
+            String[] parts = q.split(" ");
+            if (parts[0].equals("update")) {
+                int u = Integer.parseInt(parts[1]);
+                char c = parts[2].charAt(0);
+                
+                int oldVal = 1 << currentChar[u];
+                int newVal = 1 << (c - 'a');
+                int diff = oldVal ^ newVal;
+
+                currentChar[u] = c - 'a';
+                updateSubtree(u, diff);
+            } else {
+                int u = Integer.parseInt(parts[1]);
+                int v = Integer.parseInt(parts[2]);
+                int lca = getLCA(u, v);
+
+                int maskU = queryBit(tin[u]);
+                int maskV = queryBit(tin[v]);
+                int maskLcaChar = 1 << currentChar[lca];
+
+                int pathMask = maskU ^ maskV ^ maskLcaChar;
+                result.add((pathMask & (pathMask - 1)) == 0);
+            }
+        }
+
+        return result;
+    }
+}
