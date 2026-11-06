@@ -1,0 +1,52 @@
+import java.util.Arrays;
+
+class Solution {
+    public int[] countServers(int n, int[][] logs, int x, int[] queries) {
+        int m = queries.length;
+        int[] res = new int[m];
+
+        int[][] indexedQueries = new int[m][2];
+        for (int i = 0; i < m; i++) {
+            indexedQueries[i][0] = queries[i];
+            indexedQueries[i][1] = i;
+        }
+
+        Arrays.sort(logs, (a, b) -> Integer.compare(a[1], b[1]));
+        Arrays.sort(indexedQueries, (a, b) -> Integer.compare(a[0], b[0]));
+
+        int[] serverCount = new int[n + 1];
+        int activeServers = 0;
+
+        int l = 0;
+        int r = 0;
+        int numLogs = logs.length;
+
+        for (int[] query : indexedQueries) {
+            int qTime = query[0];
+            int originalIdx = query[1];
+            int windowStart = qTime - x;
+
+            while (r < numLogs && logs[r][1] <= qTime) {
+                int serverId = logs[r][0];
+                if (serverCount[serverId] == 0) {
+                    activeServers++;
+                }
+                serverCount[serverId]++;
+                r++;
+            }
+
+            while (l < numLogs && logs[l][1] < windowStart) {
+                int serverId = logs[l][0];
+                serverCount[serverId]--;
+                if (serverCount[serverId] == 0) {
+                    activeServers--;
+                }
+                l++;
+            }
+
+            res[originalIdx] = n - activeServers;
+        }
+
+        return res;
+    }
+}
