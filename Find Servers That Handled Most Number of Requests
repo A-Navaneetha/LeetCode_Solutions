@@ -1,0 +1,48 @@
+import java.util.*;
+
+class Solution {
+    public List<Integer> busiestServers(int k, int[] arrival, int[] load) {
+        PriorityQueue<int[]> Servers = new PriorityQueue<>((a, b) -> Integer.compare(a[0], b[0]));
+        TreeSet<Integer> availableServers = new TreeSet<>();
+        
+        for (int i = 0; i < k; i++) {
+            availableServers.add(i);
+        }
+        
+        int[] reqCount = new int[k];
+        int maxReq = 0;
+        
+        for (int i = 0; i < arrival.length; i++) {
+            int currTime = arrival[i];
+            
+            while (!Servers.isEmpty() && Servers.peek()[0] <= currTime) {
+                int[] server = Servers.poll();
+                availableServers.add(server[1]);
+            }
+            
+            if (availableServers.isEmpty()) {
+                continue;
+            }
+            
+            Integer assignedServer = availableServers.ceiling(i % k);
+            if (assignedServer == null) {
+                assignedServer = availableServers.ceiling(0);
+            }
+            
+            availableServers.remove(assignedServer);
+            Servers.offer(new int[] { currTime + load[i], assignedServer });
+            
+            reqCount[assignedServer]++;
+            maxReq = Math.max(maxReq, reqCount[assignedServer]);
+        }
+        
+        List<Integer> res= new ArrayList<>();
+        for (int i = 0; i < k; i++) {
+            if (reqCount[i] == maxReq) {
+                res.add(i);
+            }
+        }
+        
+        return res;
+    }
+}
