@@ -1,0 +1,29 @@
+import java.util.ArrayDeque;
+import java.util.Deque;
+class Solution {
+    public long countNonDecreasingSubarrays(int[] nums, int k) {
+        int n = nums.length;
+        long ans = 0;
+        long cost = 0;
+        int j = n - 1;
+        Deque<Integer> dq = new ArrayDeque<>();
+        for (int i = n - 1; i >= 0; i--) {
+            while (!dq.isEmpty() && nums[dq.peekFirst()] < nums[i]) {
+                int currPeakIdx = dq.pollFirst();
+                int nextBoundary = dq.isEmpty() ? j + 1 : dq.peekFirst();
+                cost += (long) (nextBoundary - currPeakIdx) * (nums[i] - nums[currPeakIdx]);
+            }
+            dq.addFirst(i);
+            while (cost > k) {
+                int maxValAtRight = nums[dq.peekLast()];
+                cost -= (maxValAtRight - nums[j]);
+                if (dq.peekLast() == j) {
+                    dq.pollLast();
+                }
+                j--;
+            }
+            ans += (j - i + 1);
+        }
+        return ans;
+    }
+}
