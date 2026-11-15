@@ -1,0 +1,24 @@
+class Solution {
+    public int numOfSubarrays(int[] arr) {
+        int MOD = 1_000_000_007;
+        long c = 0;
+        int prefixSum = 0;
+        
+        int evenCount = 1;
+        int oddCount = 0;
+
+        for (int num : arr) {
+            prefixSum += num;
+
+            if (prefixSum % 2 == 0) {
+                c = (c + oddCount) % MOD;
+                evenCount++;
+            } else {
+                c = (c + evenCount) % MOD;
+                oddCount++;
+            }
+        }
+
+        return (int) c;
+    }
+}
