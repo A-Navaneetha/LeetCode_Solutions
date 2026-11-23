@@ -1,0 +1,25 @@
+class ProductOfNumbers {
+    private List<Integer> pref;
+
+    public ProductOfNumbers() {
+        pref = new ArrayList<>();
+        pref.add(1);
+    }
+    
+    public void add(int num) {
+        if (num == 0) {
+            pref = new ArrayList<>();
+            pref.add(1);
+        } else {
+            pref.add(pref.get(pref.size() - 1) * num);
+        }
+    }
+    
+    public int getProduct(int k) {
+        int n = pref.size();
+        if (k >= n) {
+            return 0;
+        }
+        return pref.get(n - 1) / pref.get(n - 1 - k);
+    }
+}
